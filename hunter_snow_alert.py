@@ -237,7 +237,7 @@ def main():
     # SNOW FORECAST ABOVE ALERT THRESHOLD
     # ----------------------------------------------
 
-    if snow_inches >= SNOW_ALERT_THRESHOLD:
+    if snow_inches >= SNOW_ALERT_THRESHOLD_IN:
 
         # First alert for this snow event
         if not active_alert:
