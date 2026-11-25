@@ -1,0 +1,50 @@
+
+name: Hunter Mountain Snow Alert
+
+on:
+  schedule:
+    - cron: "0 0,6,12,18 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: hunter-snow-alert
+  cancel-in-progress: false
+
+jobs:
+  check-weather:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run snow alert agent
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python hunter_snow_alert.py
+
+      - name: Save alert state
+        run: |
+          git config user.name "Hunter Snow Alert Bot"
+          git config user.email "hunter-snow-alert[bot]@users.noreply.github.com"
+
+          git add snow_state.json
+
+          if git diff --cached --quiet; then
+            echo "No state changes to save."
+          else
+            git commit -m "Update snow alert state"
+            git push
+          fi
